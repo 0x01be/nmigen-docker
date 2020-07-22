@@ -1,5 +1,5 @@
 FROM 0x01be/yosys as yosys
-FROM 0x01be/prjtrellis as prjtrellis
+FROM 0x01be/icestorm as icestorm
 FROM 0x01be/nextpnr:ecp5 as nextpnr
 
 FROM alpine:3.12.0 as builder
@@ -17,9 +17,9 @@ RUN apk add --no-cache --virtual runtime-dependencies \
     python3
 
 COPY --from=yosys /opt/yosys/ /opt/yosys/
-COPY --from=prjtrellis /opt/prjtrellis/ /opt/prjtrellis/
+COPY --from=icestorm /opt/icestorm/ /opt/icestorm/
 COPY --from=nextpnr /opt/nextpnr/ /opt/nextpnr/
 COPY --from=builder /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/
 
-ENV PATH /opt/yosys/bin/:/opt/prjtrellis/bin/:/opt/nextpnr/bin/:$PATH
+ENV PATH /opt/yosys/bin/:/opt/icestorm/bin/:/opt/nextpnr/bin/:$PATH
 
