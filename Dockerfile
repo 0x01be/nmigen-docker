@@ -1,25 +1,19 @@
 FROM 0x01be/yosys as yosys
 FROM 0x01be/icestorm as icestorm
-FROM 0x01be/nextpnr:ecp5 as nextpnr
+FROM 0x01be/nextpnr:ice40 as nextpnr
 
-FROM alpine:3.12.0 as builder
+FROM 0x01be/alpine:edge as builder
 
-RUN apk add --no-cache --virtual build-dependencies \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+RUN apk add --no-cache --virtual nmigen-build-dependencies \
     git \
     py3-pip
 
 RUN pip install git+https://github.com/m-labs/nmigen.git
 RUN pip install git+https://github.com/m-labs/nmigen-boards.git
 
-FROM alpine:3.12.0
+FROM 0x01be/alpine:edge
 
-RUN apk add --no-cache --virtual runtime-dependencies \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+RUN apk add --no-cache --virtual nmigen-runtime-dependencies \
     python3
 
 COPY --from=yosys /opt/yosys/ /opt/yosys/
