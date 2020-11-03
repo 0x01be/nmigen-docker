@@ -7,7 +7,7 @@ FROM alpine as build
 RUN apk add --no-cache --virtual nmigen-build-dependencies \
     git \
     py3-pip &&\
-    pip install --prefix=/opt/nmigen/ \
+    pip install --prefix=/opt/nmigen \
     git+https://github.com/m-labs/nmigen.git \
     git+https://github.com/m-labs/nmigen-boards.git
 
