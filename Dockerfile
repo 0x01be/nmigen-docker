@@ -23,10 +23,12 @@ COPY --from=build /opt/nmigen/ /opt/nmigen/
 
 ENV USER=nmigen \
     WORKSPACE=/workspace
-RUN adduser -D -u 1000 ${USER}  && mkdir ${WORKSPACE} && chown ${USER}:${USER}
+RUN adduser -D -u 1000 ${USER} &&\
+     mkdir ${WORKSPACE} &&\
+     chown ${USER}:${USER} ${WORKSPACE}
 
 USER ${USER}
-
+WORKDIR ${WORKSPACE}
 ENV PATH=${PATH}:/opt/yosys/bin/:/opt/prjtrellis/bin/:/opt/nextpnr/bin/ \
     PYTHONPATH=/usr/lib/python3.8/site-packages/:/opt/nmigen/lib/python3.8/site-packages/
 
