@@ -2,30 +2,31 @@ FROM 0x01be/yosys as yosys
 FROM 0x01be/prjtrellis as prjtrellis
 FROM 0x01be/nextpnr:ecp5 as nextpnr
 
-FROM alpine:3.12.0 as builder
+FROM alpine as build
 
-RUN apk add --no-cache --virtual build-dependencies \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+RUN apk add --no-cache --virtual nextpnr-build-dependencies \
     git \
-    py3-pip
+    py3-pip &&\
+    pip install --prefix=/opt/nmigen/ \
+    git+https://github.com/m-labs/nmigen.git \
+    git+https://github.com/m-labs/nmigen-boards.git
 
-RUN pip install git+https://github.com/m-labs/nmigen.git
-RUN pip install git+https://github.com/m-labs/nmigen-boards.git
+FROM alpine
 
-FROM alpine:3.12.0
-
-RUN apk add --no-cache --virtual runtime-dependencies \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/main \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+RUN apk add --no-cache --virtual nextpnr-runtime-dependencies \
     python3
 
 COPY --from=yosys /opt/yosys/ /opt/yosys/
 COPY --from=prjtrellis /opt/prjtrellis/ /opt/prjtrellis/
 COPY --from=nextpnr /opt/nextpnr/ /opt/nextpnr/
-COPY --from=builder /usr/lib/python3.8/site-packages/ /usr/lib/python3.8/site-packages/
+COPY --from=build /opt/nmigen/ /opt/nmigen/
 
-ENV PATH /opt/yosys/bin/:/opt/prjtrellis/bin/:/opt/nextpnr/bin/:$PATH
+ENV USER=nmigen \
+    WORKSPACE=/workspace
+RUN adduser -D -u 1000 ${USER}  && mkdir ${WORKSPACE} && chown ${USER}:${USER}
+
+USER ${USER}
+
+ENV PATH=${PATH}:/opt/yosys/bin/:/opt/prjtrellis/bin/:/opt/nextpnr/bin/ \
+    PYTHONPATH=/usr/lib/python3.8/site-packages/:/opt/nmigen/lib/python3.8/site-packages/
 
